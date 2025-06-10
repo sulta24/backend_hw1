@@ -1,0 +1,218 @@
+Todo List Application
+This is a simple, full-stack Todo List application designed to demonstrate core backend development principles, including CRUD operations, user authentication, database integration, and containerization.
+
+🚀 Features
+User Management:
+
+User registration.
+
+User login with JWT (JSON Web Token) authentication.
+
+Protected API endpoints requiring authentication.
+
+User-specific tasks: each user only sees and manages their own tasks.
+
+Task Management (CRUD):
+
+Create new tasks.
+
+Read/retrieve all tasks for the logged-in user.
+
+Update task details (title, description, completion status).
+
+Delete tasks.
+
+Database Integration:
+
+Data persistence using PostgreSQL.
+
+SQLAlchemy ORM for efficient database interactions.
+
+Containerization:
+
+Dockerfile for building the FastAPI backend application into a Docker image.
+
+Docker Compose for orchestrating both the FastAPI backend and the PostgreSQL database.
+
+Continuous Integration/Continuous Deployment (CI/CD):
+
+Basic GitHub Actions workflow for automated building of the Docker image on pushes to main.
+
+Frontend:
+
+A simple web interface built with HTML and JavaScript for interacting with the backend API.
+
+🛠️ Technologies Used
+Backend:
+
+FastAPI - High-performance web framework for building APIs with Python.
+
+SQLAlchemy - Python SQL toolkit and Object Relational Mapper (ORM).
+
+PostgreSQL - Powerful, open-source relational database system.
+
+Pydantic - Data validation and settings management using Python type hints.
+
+python-jose & passlib - Libraries for JWT authentication and password hashing.
+
+Uvicorn - Lightning-fast ASGI server for running FastAPI.
+
+Frontend:
+
+HTML, CSS, JavaScript (Vanilla JS for API calls).
+
+Containerization:
+
+Docker - Platform for developing, shipping, and running applications in containers.
+
+Docker Compose - Tool for defining and running multi-container Docker applications.
+
+CI/CD:
+
+GitHub Actions - Automation platform for CI/CD workflows.
+
+🚀 Getting Started
+Follow these instructions to get a copy of the project up and running on your local machine.
+
+Prerequisites
+Before you begin, ensure you have the following installed:
+
+Git: For cloning the repository.
+
+Docker Desktop (or Docker Engine and Docker Compose if on Linux): Essential for running the application services.
+
+Installation
+Clone the repository:
+Start by cloning the project to your local machine.
+
+git clone https://github.com/your-username/your-todo-app.git # Replace with your actual repository URL
+cd your-todo-app
+
+Build and run the Docker containers:
+Navigate to the root of the cloned project (where docker-compose.yml is located) and execute the following command:
+
+docker-compose up --build
+
+This command will:
+
+Pull the postgres:13-alpine Docker image (if not already present).
+
+Build your web service (the FastAPI application) from the Dockerfile located in the backend/ directory.
+
+Start both the PostgreSQL database and the FastAPI application, connecting them within a Docker network.
+
+Important Note on Database Data:
+If you've previously run the project and encounter database-related errors (e.g., "column 'user_id' does not exist" or other schema mismatches), you might need to clean up old Docker volumes. Be aware that this will delete ALL existing data (users and tasks) in your database.
+
+docker-compose down -v # Stops containers and removes volumes (WARNING: deletes all data!)
+docker-compose up --build
+
+👨‍💻 Usage
+Once docker-compose up --build is running successfully and you see Application startup complete in your terminal for the web_1 service, your application is ready for interaction.
+
+Access the Frontend:
+Open the frontend/index.html file in your web browser. You can typically do this by navigating to the file in your system's file explorer and double-clicking it, or by dragging and dropping it into your browser window.
+(Example path: file:///path/to/your-project/frontend/index.html)
+
+Register a New User:
+
+In the "Register" section of the frontend, enter a desired Username and Password.
+
+Click the "Register" button. You should receive a success message confirming registration.
+
+Login:
+
+In the "Login" section, use the Username and Password of the user you just registered (or any existing user).
+
+Click the "Login" button.
+
+Upon successful login, the authentication section will disappear, and the "App Section" will become visible, indicating "Logged in as: [Your Username]".
+
+Manage Tasks:
+
+Create Task: In the "Create New Task" section, enter a "Task Title" and optionally a "Description". Then, click "Add Task".
+
+View Tasks: Your newly created task(s) will automatically appear in the "Your Tasks" list below.
+
+Toggle Completion: Click the "Mark as Complete" or "Mark as Incomplete" button next to a task to easily change its completion status.
+
+Delete Task: Click the "Delete" button next to a task to permanently remove it. A browser confirmation dialog will appear for safety.
+
+Logout:
+
+Click the "Logout" button to clear your session. The UI will revert to the login/registration state, and your tasks will no longer be visible until you log in again.
+
+📂 Project Structure
+This project is organized into clear, logical directories:
+
+.
+├── backend/                  # Contains the FastAPI backend application
+│   ├── app/                  # Python source code for the FastAPI app
+│   │   ├── __init__.py
+│   │   ├── main.py           # Main FastAPI application with all routes and CORS middleware
+│   │   ├── database.py       # SQLAlchemy engine and session setup for PostgreSQL
+│   │   ├── models.py         # SQLAlchemy ORM models defining User and Task database tables
+│   │   ├── schemas.py        # Pydantic data models for request/response validation and serialization
+│   │   ├── crud.py           # Functions for Create, Read, Update, Delete (CRUD) operations on database models
+│   │   └── auth.py           # Logic for JWT token generation, password hashing, and user authentication
+│   ├── Dockerfile            # Instructions for building the FastAPI application's Docker image
+│   └── requirements.txt      # List of Python dependencies required by the backend
+├── frontend/                 # Simple HTML/JavaScript-based user interface
+│   ├── index.html            # The main HTML file for the web frontend
+│   └── script.js             # JavaScript code handling frontend logic and API communication
+├── .github/                  # GitHub Actions CI/CD workflow definitions
+│   └── workflows/
+│       └── ci-cd.yml         # Defines the Continuous Integration/Deployment pipeline
+└── docker-compose.yml        # Docker Compose configuration for multi-container application orchestration
+
+⚠️ Troubleshooting
+Encountering issues? Here are common problems and their solutions:
+
+ERROR: The Compose file './docker-compose.yml' is invalid because: 'ersion' does not match...
+
+Fix: This indicates a typo. Ensure the first line of your docker-compose.yml is exactly version: '3.8'.
+
+PermissionError: [Errno 13] Permission denied (related to Docker socket)
+
+Fix: Your user account lacks permissions to access the Docker daemon. Add your user to the docker group by running: sudo usermod -aG docker $USER. Afterwards, log out and log back in (or reboot your system) for the changes to take effect.
+
+TypeError: get_tasks() missing 1 required positional argument: 'user_id' or other database schema errors (column "user_id" does not exist)
+
+Reason: The database volume contains an outdated schema that no longer matches your models.py.
+
+Fix: This action will delete all existing data in your database! To resolve, run docker-compose down -v to stop containers and remove the old database volume. Then, run docker-compose up --build to create a fresh database with the correct schema. You will need to re-register users.
+
+405 Method Not Allowed or CORS errors in your browser console:
+
+Reason: Your frontend, running from a different origin (e.g., file://), is attempting to make requests that your backend isn't configured to allow.
+
+Fix: Ensure the CORS middleware in backend/app/main.py is correctly configured to include allow_origins=["file://", "null", "http://localhost:8000", "http://127.0.0.1:8000"] (or specific domains if deployed). The provided code already includes this setup.
+
+Frontend not connecting (network errors in browser console):
+
+Check API_BASE_URL in frontend/script.js: Verify that it is correctly set to http://localhost:8000.
+
+Verify Backend is Running: Inspect your terminal where docker-compose up is running for any error messages or if the web_1 service has unexpectedly stopped.
+
+Test FastAPI Docs: Try navigating to http://localhost:8000/docs in your browser. If this doesn't load the FastAPI documentation (Swagger UI), it indicates that your backend container is not accessible on port 8000.
+
+📈 Future Enhancements
+This MVP provides a strong foundation. Here are some ideas for further development and enhancements:
+
+Improved Frontend: Transition to a modern JavaScript framework like React, Vue, or Angular for a more dynamic, scalable, and maintainable user interface.
+
+Password Reset: Implement a secure "forgot password" and password reset functionality.
+
+Comprehensive Testing: Add more extensive unit and integration tests for both the frontend and backend to ensure robustness.
+
+Container Security: Harden Docker images by using multi-stage builds, running as a non-root user, and scanning for vulnerabilities.
+
+Automated Deployment: Set up automated deployment workflows to a cloud provider (e.g., AWS, Azure, Google Cloud, Heroku) for continuous delivery.
+
+Centralized Error Logging: Integrate a proper logging solution (e.g., ELK stack, Grafana Loki) for better error monitoring and debugging.
+
+Enhanced API Documentation: Extend FastAPI's auto-generated OpenAPI (Swagger UI) with more detailed descriptions, examples, and request/response models.
+
+Rate Limiting: Implement API rate limiting to protect endpoints from abuse and brute-force attacks.
+
+Docker Image Optimization: Further optimize Docker image size and build times for faster development cycles and deployments.

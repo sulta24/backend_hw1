@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+  # Database service
+  db:
+    image: postgres:13-alpine # Use a lightweight PostgreSQL image
+    environment:
+      POSTGRES_DB: postgres         # Default database name
+      POSTGRES_USER: postgres       # Default database user
+      POSTGRES_PASSWORD: mysecretpassword # !!! IMPORTANT: Change this to a strong password in production!
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persist database data
+    ports:
+      - "5432:5432" # Map container port 5432 to host port 5432 (optional, for local DB access/tools)
+
+  # FastAPI web application service
+  web:
+    build: ./backend # Build from the Dockerfile in the ./backend directory
+    # Command to run the FastAPI application using uvicorn
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    # Mount the backend code. This is useful for development (live reloading)
+    # For production, you'd typically copy the code into the image and not mount.
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000" # Map container port 8000 to host port 8000
+    depends_on:
+      - db # Ensure the 'db' service starts before 'web'
+    environment:
+      # Database connection URL for the web service.
+      # 'db' here refers to the service name defined in this docker-compose.yml
+      SQLALCHEMY_DATABASE_URL: "postgresql://postgres:mysecretpassword@db/postgres"
+      # Match this with the SECRET_KEY in backend/app/auth.py
+      SECRET_KEY: "super-secret-jwt-key-change-this-in-production" # Should be kept secret!
+
+# Define named volumes for data persistence
+volumes:
+  postgres_data:

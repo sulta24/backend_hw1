@@ -1,0 +1,51 @@
+name: FastAPI CI/CD
+
+on:
+  push:
+    branches:
+      - main # Trigger on pushes to the main branch
+  pull_request:
+    branches:
+      - main # Trigger on pull requests targeting the main branch
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest # Use the latest Ubuntu runner
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 # Action to checkout your repository code
+
+      - name: Set up Python
+        uses: actions/setup-python@v5 # Action to set up Python environment
+        with:
+          python-version: '3.9' # Specify Python version
+
+      - name: Install backend dependencies
+        run: |
+          cd backend # Navigate to the backend directory
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt # Install Python dependencies
+
+      # You can add a step here to run backend tests if you had them
+      # - name: Run backend tests
+      #   run: |
+      #     cd backend
+      #     pytest
+
+      - name: Build Docker image for backend
+        run: |
+          docker build -t todo-backend-image ./backend # Build the Docker image for your FastAPI app
+
+      # Optional: Add steps for deployment if you have a deployment target (e.g., Docker Hub, AWS ECR, etc.)
+      # For a basic CI, just building the image is sufficient.
+      # Example of pushing to Docker Hub (requires Docker Hub username and token secrets in GitHub):
+      # - name: Login to Docker Hub
+      #   uses: docker/login-action@v3
+      #   with:
+      #     username: ${{ secrets.DOCKER_USERNAME }} # GitHub Secret for Docker Hub username
+      #     password: ${{ secrets.DOCKER_TOKEN }}    # GitHub Secret for Docker Hub token
+      # - name: Push Docker image to Docker Hub
+      #   run: |
+      #     docker tag todo-backend-image your-dockerhub-username/todo-backend:latest
+      #     docker push your-dockerhub-username/todo-backend:latest
