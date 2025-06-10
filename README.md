@@ -71,16 +71,12 @@ git clone https://github.com/your-username/your-todo-app.git  # 🔁 Replace wit
 cd your-todo-app
 Then, to build and run the application:
 
-bash
-Копировать
-Редактировать
+
 docker-compose up --build
 ⚠️ Important: Reset the DB (if needed)
 If schema errors occur (like missing columns), clean old volumes:
 
-bash
-Копировать
-Редактировать
+
 docker-compose down -v  # ⚠️ This deletes ALL data!
 docker-compose up --build
 👨‍💻 Usage
@@ -110,9 +106,7 @@ Delete Task: Click "Delete" → Confirm in browser dialog.
 Click the Logout button to clear the session and return to login screen.
 
 📂 Project Structure
-bash
-Копировать
-Редактировать
+
 .
 ├── backend/
 │   ├── app/
