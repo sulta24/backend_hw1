@@ -7,6 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware # Import CORSMiddleware
 # Import necessary modules from your application
 from . import models, schemas, crud, auth
 from .database import engine, get_db
+import os
+import redis.asyncio as redis # Импортируем асинхронный клиент Redis
 
 # Create all database tables defined in models.py if they don't exist.
 # This runs once when the application starts.
@@ -40,6 +42,14 @@ app.add_middleware(
     allow_headers=["*"], # Allow all headers
 )
 
+
+
+
+redis_client = redis.Redis(
+    host=os.getenv("REDIS_HOST", "localhost"), # 'redis' при работе в Docker Compose
+    port=int(os.getenv("REDIS_PORT", 6379)),
+    decode_responses=True # Чтобы получать строки, а не байты
+)
 # --- Authentication Endpoints ---
 
 @app.post("/register/", response_model=schemas.User, summary="Register a new user")
@@ -172,3 +182,26 @@ def delete_task_by_id(
     if db_task is None:
         raise HTTPException(status_code=404, detail="Task not found or you do not have permission to delete it")
     return # Return no content for 204 status
+
+
+@app.get("/cached_tasks/", response_model=list[schemas.Task], summary="Get tasks from cache or DB (secured)")
+async def get_cached_tasks(
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Пример использования Redis для кэширования
+    cache_key = f"user_tasks_{current_user.id}"
+    cached_data = await redis_client.get(cache_key)
+
+    if cached_data:
+        print("Fetching tasks from cache!")
+        return json.loads(cached_data) # Десериализуем из JSON
+
+    # Если в кэше нет, получаем из БД
+    print("Fetching tasks from database!")
+    tasks = crud.get_tasks(db, user_id=current_user.id)
+    
+    # Кэшируем данные на 60 секунд
+    await redis_client.setex(cache_key, 60, json.dumps([task.dict() for task in tasks])) # Сериализуем в JSON
+
+    return tasks
